@@ -207,7 +207,7 @@ void ChangeWeapon (edict_t *ent)
 		ent->client->ps.gunindex = 0;
 		return;
 	}
-	//This comment is NOTHING
+
 	ent->client->weaponstate = WEAPON_ACTIVATING;
 	ent->client->ps.gunframe = 0;
 	ent->client->ps.gunindex = gi.modelindex(ent->client->pers.weapon->view_model);
@@ -782,10 +782,10 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 	fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
 
-	VectorSet(offset, 8, -8, ent->viewheight-8);
+	/*VectorSet(offset, 8, -8, ent->viewheight-8);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 	fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
-
+	*/
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
@@ -805,10 +805,8 @@ void Weapon_RocketLauncher (edict_t *ent)
 	static int	pause_frames[]	= {23, 45, 0};
 	static int	fire_frames[]	= {4, 5, 0};
 
-	//static int	pause_frames[]	= {25, 33, 42, 50, 0};
-	//static int	fire_frames[]	= {5, 0};
-
 	Weapon_Generic (ent, 3, 5, 45, 49, pause_frames, fire_frames, Weapon_RocketLauncher_Fire);
+
 }
 
 
