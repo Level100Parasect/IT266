@@ -621,6 +621,8 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 {
 	edict_t	*rocket;
 
+	int			j;
+
 	rocket = G_Spawn();
 	VectorCopy (start, rocket->s.origin);
 	VectorCopy (dir, rocket->movedir);
@@ -644,8 +646,16 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->classname = "rocket";
 
 	if (self->client)
+	{
 		check_dodge (self, rocket->s.origin, dir, speed);
+		
+		//rocket dash for the speed demon
+		for (j = 0;j< 3; j++)
+		{
+			self->velocity[j] -= (dir[j] * 1000);
+		}
 
+	}
 	gi.linkentity (rocket);
 }
 
