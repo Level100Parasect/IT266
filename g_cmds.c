@@ -228,7 +228,7 @@ void Cmd_Give_f (edict_t *ent)
 		if (!give_all)
 			return;
 	}
-
+	
 	if (give_all || Q_stricmp(name, "Power Shield") == 0)
 	{
 		it = FindItem("Power Shield");
@@ -899,6 +899,27 @@ void Cmd_PlayerList_f(edict_t *ent)
 	gi.cprintf(ent, PRINT_HIGH, "%s", text);
 }
 
+/*
+==================
+Cmd_ChangeClass_f
+
+Switches ints for the thing
+
+argv(0) god
+==================
+*/
+void Cmd_ChangeClass_f (edict_t *ent)
+{
+	char	*msg;
+
+	ent->flags ^= FL_BRUISER;
+	if (!(ent->flags & FL_BRUISER) )
+		msg = "Gotta go Fast!\n";
+	else
+		msg = "Clobberin' Time!\n";
+
+	gi.cprintf (ent, PRINT_HIGH, msg);
+}
 
 /*
 =================
@@ -987,6 +1008,8 @@ void ClientCommand (edict_t *ent)
 		Cmd_Wave_f (ent);
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
+	else if (Q_stricmp (cmd, "changeclass") == 0)
+		Cmd_ChangeClass_f (ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }

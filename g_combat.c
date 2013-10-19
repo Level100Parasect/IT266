@@ -457,6 +457,14 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 		save = damage;
 		SpawnDamage (te_sparks, point, normal, save);
 	}
+	
+		// check for bruiser? I think. I suck at coding :(
+	if ( (targ->flags & FL_BRUISER) && !(dflags & DAMAGE_NO_PROTECTION) )
+	{
+		take = 0;
+		save = damage;
+		SpawnDamage (te_sparks, point, normal, save);
+	}
 
 	// check for invincibility
 	if ((client && client->invincible_framenum > level.framenum ) && !(dflags & DAMAGE_NO_PROTECTION))

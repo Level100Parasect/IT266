@@ -156,6 +156,7 @@ qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 
 	if (other->client->pers.weapon != ent->item && 
 		(other->client->pers.inventory[index] == 1) &&
+		//( !deathmatch->value || other->client->pers.weapon == FindItem("trait") ) )
 		( !deathmatch->value || other->client->pers.weapon == FindItem("blaster") ) )
 		other->client->newweapon = ent->item;
 
@@ -269,6 +270,7 @@ void NoAmmoWeaponChange (edict_t *ent)
 		ent->client->newweapon = FindItem ("shotgun");
 		return;
 	}
+	//ent->client->newweapon = FindItem ("trait");
 	ent->client->newweapon = FindItem ("blaster");
 }
 
@@ -548,12 +550,20 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 	vec3_t	offset;
 	vec3_t	forward, right;
 	vec3_t	start;
-	int		damage = 25;
-	//int		damage = 125;
+	int		damage;
 	float	timer;
 	int		speed;
 	float	radius;
-
+	
+	if (ent->flags & FL_BRUISER)
+	{
+		damage = 125;
+	}
+	else
+	{
+		damage = 25;
+	}
+	
 	radius = damage+40;
 	if (is_quad)
 		damage *= 4;
@@ -712,9 +722,13 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 	vec3_t	offset;
 	vec3_t	forward, right;
 	vec3_t	start;
-	int		damage = 20;
-	//int		damage = 120;
+	int		damage;
 	float	radius;
+
+	if (ent->flags & FL_BRUISER)
+		damage = 120;
+	else
+		damage = 20;
 
 	radius = damage+40;
 	if (is_quad)
@@ -757,6 +771,7 @@ ROCKET
 
 ======================================================================
 */
+//rocket: bruiser shoot 2 wide spread rockets that do more damage
 
 void Weapon_RocketLauncher_Fire (edict_t *ent)
 {
@@ -765,14 +780,19 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	int		damage;
 	float	damage_radius;
 	int		radius_damage;
-
-	/*damage = 100 + (int)(random() * 20.0);
-	radius_damage = 120;
-	damage_radius = 120;
-	*/
-	damage = 10 + (int)(random() * 20.0);
-	radius_damage = 20;
-	damage_radius = 20;
+	
+	if (ent->flags & FL_BRUISER)
+	{
+		damage = 100 + (int)(random() * 20.0);
+		radius_damage = 120;
+		damage_radius = 120;
+	}
+	else
+	{
+		damage = 20 + (int)(random() * 20.0);
+		radius_damage = 30;
+		damage_radius = 30;
+	}
 
 	if (is_quad)
 	{
@@ -785,9 +805,22 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	VectorSet(offset, 8, 8, ent->viewheight-8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-	fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
+	if (ent->flags & FL_BRUISER)	
+	{
+		VectorSet(offset, 8, 8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
+
+		VectorSet(offset, 8, -8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
+	}
+	else
+	{
+		VectorSet(offset, 8, 8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
+	}
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -820,6 +853,8 @@ BLASTER / HYPERBLASTER
 
 ======================================================================
 */
+//blaster: bruiser does more damage but shoots slower than the speed demon
+//added bonus, speed demon can blaster dash
 
 void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, int effect)
 {
@@ -856,27 +891,30 @@ void Weapon_Blaster_Fire (edict_t *ent)
 {
 	int		damage;
 
-	if (deathmatch->value)
-		//damage = 15;
-		damage = 4;
+	if (ent->flags & FL_BRUISER)
+		damage = 20;
 	else
-		//damage = 10;
-		damage = 2;
+		damage = 8;
+	
 	Blaster_Fire (ent, vec3_origin, damage, false, EF_BLASTER);
 	ent->client->ps.gunframe++;
 }
 
 void Weapon_Blaster (edict_t *ent)
 {
-	/*static int	pause_frames[]	= {19, 32, 0};
+
+	static int	pause_frames[]	= {19, 32, 0};
 	static int	fire_frames[]	= {5, 0};
 
-	Weapon_Generic (ent, 4, 8, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
-	*/
+	if (ent->flags & FL_BRUISER)
+		Weapon_Generic (ent, 4, 8, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
+	else
+	/*
 	static int	pause_frames[]	= {23, 45, 0};
 	static int	fire_frames[]	= {4, 5, 0};
-
-	Weapon_Generic (ent, 3, 5, 45, 49, pause_frames, fire_frames, Weapon_Blaster_Fire);
+	*/
+		Weapon_Generic (ent, 3, 5, 45, 49, pause_frames, fire_frames, Weapon_Blaster_Fire);
+	
 }
 
 
@@ -966,17 +1004,21 @@ MACHINEGUN / CHAINGUN
 
 ======================================================================
 */
-
+//machinegun: speed demon shoots bullets in a wider angle, but they are weaker
 void Machinegun_Fire (edict_t *ent)
 {
 	int	i;
 	vec3_t		start;
 	vec3_t		forward, right;
 	vec3_t		angles;
-	//int			damage = 8;
-	int			damage = 2;
+	int			damage;
 	int			kick = 2;
 	vec3_t		offset;
+
+	if (ent->flags & FL_BRUISER)
+		damage = 10;
+	else
+		damage = 2;
 
 	if (!(ent->client->buttons & BUTTON_ATTACK))
 	{
@@ -1027,9 +1069,27 @@ void Machinegun_Fire (edict_t *ent)
 	// get start / end positions
 	VectorAdd (ent->client->v_angle, ent->client->kick_angles, angles);
 	AngleVectors (angles, forward, right, NULL);
-	VectorSet(offset, 0, 8, ent->viewheight-8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-	fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+	
+	if (ent->flags & FL_BRUISER)
+	{
+		VectorSet(offset, 0, 8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+	}
+	else
+	{
+		VectorSet(offset, 0, 8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+
+		VectorSet(offset, 0, -8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+
+		VectorSet(offset, 0, 32, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+	}
 
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
@@ -1200,15 +1260,19 @@ SHOTGUN / SUPERSHOTGUN
 
 ======================================================================
 */
-
+//shotguns/supershotgun: speed demon shoots faster, but much much weaker
 void weapon_shotgun_fire (edict_t *ent)
 {
 	vec3_t		start;
 	vec3_t		forward, right;
 	vec3_t		offset;
-	//int			damage = 4;
-	int			damage = 1;
+	int			damage;
 	int			kick = 8;
+
+	if (ent->flags & FL_BRUISER)
+		damage = 6;
+	else
+		damage = 1;
 
 	if (ent->client->ps.gunframe == 9)
 	{
@@ -1250,16 +1314,13 @@ void weapon_shotgun_fire (edict_t *ent)
 
 void Weapon_Shotgun (edict_t *ent)
 {
-	/*
-	static int	pause_frames[]	= {22, 28, 34, 0};
-	static int	fire_frames[]	= {8, 9, 0};
-
-	Weapon_Generic (ent, 7, 18, 36, 39, pause_frames, fire_frames, weapon_shotgun_fire);
-	*/
 	static int	pause_frames[]	= {23, 39, 0};
 	static int	fire_frames[]	= {4, 5, 0};
-
-	Weapon_Generic (ent, 3, 5, 35, 39, pause_frames, fire_frames, weapon_shotgun_fire);
+	
+	if (ent->flags & FL_BRUISER)
+		Weapon_Generic (ent, 4, 8, 52, 55, pause_frames, fire_frames, weapon_shotgun_fire);
+	else
+		Weapon_Generic (ent, 3, 5, 45, 49, pause_frames, fire_frames, weapon_shotgun_fire);
 }
 
 
@@ -1269,9 +1330,13 @@ void weapon_supershotgun_fire (edict_t *ent)
 	vec3_t		forward, right;
 	vec3_t		offset;
 	vec3_t		v;
-	//int			damage = 6;
-	int			damage = 2;
+	int			damage;
 	int			kick = 12;
+
+	if (ent->flags & FL_BRUISER)
+		damage = 10;
+	else
+		damage = 2;
 
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 
@@ -1319,8 +1384,11 @@ void Weapon_SuperShotgun (edict_t *ent)
 	*/
 	static int	pause_frames[]	= {23, 45, 0};
 	static int	fire_frames[]	= {4, 5, 0};
-
-	Weapon_Generic (ent, 3, 5, 45, 49, pause_frames, fire_frames, weapon_supershotgun_fire);
+	
+	if (ent->flags & FL_BRUISER)
+		Weapon_Generic (ent, 4, 8, 52, 55, pause_frames, fire_frames, weapon_supershotgun_fire);
+	else
+		Weapon_Generic (ent, 3, 5, 45, 49, pause_frames, fire_frames, weapon_supershotgun_fire);
 
 }
 
@@ -1333,7 +1401,7 @@ RAILGUN
 
 ======================================================================
 */
-
+//railgun: bruiser shoots 2 of them
 void weapon_railgun_fire (edict_t *ent)
 {
 	vec3_t		start;
@@ -1342,17 +1410,15 @@ void weapon_railgun_fire (edict_t *ent)
 	int			damage;
 	int			kick;
 
-	if (deathmatch->value)
-	{	// normal damage is too extreme in dm
-		//damage = 100;
-		damage = 25;
+	if (ent->flags & FL_BRUISER)
+	{	
+		damage = 150;
 		kick = 200;
 	}
 	else
 	{
-		//damage = 150;
 		damage = 25;
-		kick = 250;
+		kick = 450; //speed demon gets heavier recoil
 	}
 
 	if (is_quad)
@@ -1366,9 +1432,22 @@ void weapon_railgun_fire (edict_t *ent)
 	VectorScale (forward, -3, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -3;
 
-	VectorSet(offset, 0, 7,  ent->viewheight-8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-	fire_rail (ent, start, forward, damage, kick);
+	if (ent->flags & FL_BRUISER)
+	{
+		VectorSet(offset, 0, 7,  ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_rail (ent, start, forward, damage, kick);
+
+		VectorSet(offset, 0, -7,  ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_rail (ent, start, forward, damage, kick);
+	}
+	else
+	{
+		VectorSet(offset, 0, 7,  ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_rail (ent, start, forward, damage, kick);
+	}
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -1406,15 +1485,18 @@ void weapon_bfg_fire (edict_t *ent)
 	vec3_t	offset, start;
 	vec3_t	forward, right;
 	int		damage;
-	float	damage_radius = 200;
-	//float	damage_radius = 1000;
+	float	damage_radius;
 
-	if (deathmatch->value)
-		damage = 30;
-		//damage = 200;
+	if (ent->flags & FL_BRUISER)
+	{
+		damage = 500;
+		damage_radius = 2000;
+	}
 	else
-		damage = 30;
-		//damage = 500;
+	{
+		damage = 50;
+		damage_radius = 200;
+	}
 
 	if (ent->client->ps.gunframe == 9)
 	{
@@ -1472,3 +1554,55 @@ void Weapon_BFG (edict_t *ent)
 
 
 //======================================================================
+/*
+======================================================================
+
+Trait 1: Grappling Hook/Missile Barrage
+
+======================================================================
+*/
+
+void weapon_trait1_fire (edict_t *ent)
+{
+	vec3_t		start;
+	vec3_t		forward, right;
+	vec3_t		offset;
+	int			damage;
+	int			kick = 0;
+
+	//if(class_state == 1)
+	//{
+	//	damage = 125;
+	//}
+	//else
+	//{
+		damage = 0;
+	//}
+
+	AngleVectors (ent->client->v_angle, forward, right, NULL);
+
+	VectorScale (forward, -3, ent->client->kick_origin);
+	ent->client->kick_angles[0] = -3;
+
+	VectorSet(offset, 0, 7,  ent->viewheight-8);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	fire_trait1 (ent, start, forward, damage, kick);
+
+	// send muzzle flash
+	gi.WriteByte (svc_muzzleflash);
+	gi.WriteShort (ent-g_edicts);
+	gi.WriteByte (MZ_RAILGUN | is_silenced);
+	gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+	ent->client->ps.gunframe++;
+	PlayerNoise(ent, start, PNOISE_WEAPON);
+}
+
+
+void Weapon_Trait (edict_t *ent)
+{
+	static int	pause_frames[]	= {56, 0};
+	static int	fire_frames[]	= {4, 0};
+
+	Weapon_Generic (ent, 3, 18, 56, 61, pause_frames, fire_frames, weapon_trait1_fire);
+}

@@ -69,6 +69,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FL_POWER_ARMOR			0x00001000	// power armor (if any) is active
 #define FL_RESPAWN				0x80000000	// used for item respawning
 
+#define	FL_BRUISER				0x00000011	//copied from godmode
 
 #define	FRAMETIME		0.1
 
@@ -230,6 +231,7 @@ typedef struct
 #define WEAP_HYPERBLASTER		9 
 #define WEAP_RAILGUN			10
 #define WEAP_BFG				11
+#define WEAP_TRAIT				12
 
 typedef struct gitem_s
 {
@@ -734,6 +736,7 @@ void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
 void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick);
 void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius);
+void fire_trait1 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick);
 
 //
 // g_ptrail.c
@@ -999,6 +1002,8 @@ struct edict_s
 	int			movetype;
 	int			flags;
 
+	//int		    class_state;		//determines class. 0 is speed demon, 1 is bruiser 
+
 	char		*model;
 	float		freetime;			// sv.time when the object was freed
 	
@@ -1110,5 +1115,7 @@ struct edict_s
 	// common data blocks
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
+
+	int			move_speed;		//for run speed
 };
 
