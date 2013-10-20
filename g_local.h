@@ -69,7 +69,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FL_POWER_ARMOR			0x00001000	// power armor (if any) is active
 #define FL_RESPAWN				0x80000000	// used for item respawning
 
-#define	FL_BRUISER				0x00000011	//copied from godmode
+#define FL_BRUISER				0x80000001
 
 #define	FRAMETIME		0.1
 
@@ -1001,8 +1001,6 @@ struct edict_s
 	//================================
 	int			movetype;
 	int			flags;
-
-	//int		    class_state;		//determines class. 0 is speed demon, 1 is bruiser 
 
 	char		*model;
 	float		freetime;			// sv.time when the object was freed

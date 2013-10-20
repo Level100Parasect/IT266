@@ -903,9 +903,7 @@ void Cmd_PlayerList_f(edict_t *ent)
 ==================
 Cmd_ChangeClass_f
 
-Switches ints for the thing
-
-argv(0) god
+Switches ints for the thing with the mechanic and stuff
 ==================
 */
 void Cmd_ChangeClass_f (edict_t *ent)
@@ -919,6 +917,23 @@ void Cmd_ChangeClass_f (edict_t *ent)
 		msg = "Clobberin' Time!\n";
 
 	gi.cprintf (ent, PRINT_HIGH, msg);
+}
+
+/*
+=================
+Cmd_Trait1_f
+=================
+*/
+void Cmd_Trait1_f (edict_t *ent)
+{
+	if (ent->flags & FL_BRUISER)
+	{
+		weapon_trait1_bruiser (ent);
+	}
+	else
+	{
+		weapon_trait1_fire (ent);
+	}
 }
 
 /*
@@ -1008,8 +1023,10 @@ void ClientCommand (edict_t *ent)
 		Cmd_Wave_f (ent);
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
-	else if (Q_stricmp (cmd, "changeclass") == 0)
+	else if (Q_stricmp (cmd, "changeclass") == 0) //class changing command
 		Cmd_ChangeClass_f (ent);
+	else if (Q_stricmp (cmd, "trait1") == 0) //trait 1 command
+		Cmd_Trait1_f (ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }

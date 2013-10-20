@@ -1557,7 +1557,7 @@ void Weapon_BFG (edict_t *ent)
 /*
 ======================================================================
 
-Trait 1: Grappling Hook/Missile Barrage
+Trait 1: Grappling Hook
 
 ======================================================================
 */
@@ -1570,14 +1570,7 @@ void weapon_trait1_fire (edict_t *ent)
 	int			damage;
 	int			kick = 0;
 
-	//if(class_state == 1)
-	//{
-	//	damage = 125;
-	//}
-	//else
-	//{
 		damage = 0;
-	//}
 
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 
@@ -1605,4 +1598,60 @@ void Weapon_Trait (edict_t *ent)
 	static int	fire_frames[]	= {4, 0};
 
 	Weapon_Generic (ent, 3, 18, 56, 61, pause_frames, fire_frames, weapon_trait1_fire);
+}
+
+/*
+======================================================================
+
+TRAIT 1: Nuke
+
+======================================================================
+*/
+
+void weapon_trait1_bruiser (edict_t *ent)
+{
+	vec3_t	offset, start;
+	vec3_t	forward, right;
+	int		damage;
+	float	damage_radius;
+	int		radius_damage;
+	
+	damage = 100 + (int)(random() * 20.0);
+	radius_damage = 120;
+	
+	damage_radius = 1200;
+	
+	damage *= 4;
+	radius_damage *= 4;
+
+	AngleVectors (ent->client->v_angle, forward, right, NULL);
+
+	VectorScale (forward, -2, ent->client->kick_origin);
+	ent->client->kick_angles[0] = -1;
+	
+	VectorSet(offset, 8, 8, ent->viewheight-8);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	fire_nuke (ent, start, forward, damage, 650, damage_radius, radius_damage);
+
+	// send muzzle flash
+	gi.WriteByte (svc_muzzleflash);
+	gi.WriteShort (ent-g_edicts);
+	gi.WriteByte (MZ_ROCKET | is_silenced);
+	gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+	ent->client->ps.gunframe++;
+
+	PlayerNoise(ent, start, PNOISE_WEAPON);
+
+	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
+		ent->client->pers.inventory[ent->client->ammo_index]--;
+}
+
+void Weapon_Trait1_Nuke (edict_t *ent)
+{
+	static int	pause_frames[]	= {25, 33, 42, 50, 0};
+	static int	fire_frames[]	= {5, 0};
+
+	Weapon_Generic (ent, 4, 12, 50, 54, pause_frames, fire_frames, weapon_trait1_bruiser);
+
 }
