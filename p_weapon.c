@@ -1601,6 +1601,7 @@ TRAIT 1: Nuke
 */
 //Massive damage_radius to catch the speed demon
 
+//Does not appear to have a wider radius in-game - djm28
 void weapon_trait1_bruiser (edict_t *ent)
 {
 	vec3_t	offset, start;

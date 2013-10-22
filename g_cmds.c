@@ -910,6 +910,7 @@ void Cmd_ChangeClass_f (edict_t *ent)
 {
 	char	*msg;
 
+	//This is a good way to change classes in real time, but can cause an animation error - djm28
 	ent->flags ^= FL_BRUISER;
 	if (!(ent->flags & FL_BRUISER) )
 		msg = "Gotta go Fast!\n";
@@ -918,6 +919,13 @@ void Cmd_ChangeClass_f (edict_t *ent)
 
 	gi.cprintf (ent, PRINT_HIGH, msg);
 }
+
+/*
+Besides the animation error and being unable to modify the radius of the nuke, looks pretty good
+Maybe could have added more traits per class or more classes?
+
+-djm28
+*/
 
 /*
 =================
