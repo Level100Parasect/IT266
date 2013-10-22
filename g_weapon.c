@@ -674,7 +674,7 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 				self->velocity[j] -= (dir[j] * 100);
 			}
 		else
-			//rocket dash for the speed demon
+			//rocket jump for the speed demon
 			for (j = 0;j< 3; j++)
 			{
 				self->velocity[j] -= (dir[j] * 1000);
@@ -1051,5 +1051,108 @@ void fire_nuke (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, 
 	{
 		check_dodge (self, rocket->s.origin, dir, speed);
 	}
+
 	gi.linkentity (rocket);
+}
+
+void fire_landmine (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held)
+{
+	edict_t	*grenade;
+	vec3_t	dir;
+	vec3_t	forward, right, up;
+
+	vectoangles (aimdir, dir);
+	AngleVectors (dir, forward, right, up);
+
+	grenade = G_Spawn();
+	VectorCopy (start, grenade->s.origin);
+	VectorScale (aimdir, speed, grenade->velocity);
+	VectorMA (grenade->velocity, 200 + crandom() * 10.0, up, grenade->velocity);
+	VectorMA (grenade->velocity, crandom() * 10.0, right, grenade->velocity);
+	VectorSet (grenade->avelocity, 300, 300, 300);
+	grenade->movetype = MOVETYPE_BOUNCE;
+	grenade->clipmask = MASK_SHOT;
+	grenade->solid = SOLID_BBOX;
+	grenade->s.effects |= EF_GRENADE;
+	VectorClear (grenade->mins);
+	VectorClear (grenade->maxs);
+	grenade->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
+	grenade->owner = self;
+	grenade->touch = Grenade_Touch;
+	grenade->nextthink = level.time + timer;
+	grenade->think = Grenade_Explode;
+	grenade->dmg = damage;
+	grenade->dmg_radius = damage_radius;
+	grenade->classname = "grenade";
+
+	gi.linkentity (grenade);
+}
+
+// wanted to make the speed demon movement oriented. This reminds me of castlevania's backdash.
+void fire_backdash (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick)
+{
+	vec3_t		from;
+	vec3_t		end;
+	trace_t		tr;
+	edict_t		*ignore;
+	int			mask;
+	qboolean	water;
+
+	int			j;
+
+	VectorMA (start, 8192, aimdir, end);
+	VectorCopy (start, from);
+	ignore = self;
+	water = false;
+	mask = MASK_SHOT|CONTENTS_SLIME|CONTENTS_LAVA;
+	while (ignore)
+	{
+		tr = gi.trace (from, NULL, NULL, end, ignore, mask);
+
+		if (tr.contents & (CONTENTS_SLIME|CONTENTS_LAVA))
+		{
+			mask &= ~(CONTENTS_SLIME|CONTENTS_LAVA);
+			water = true;
+		}
+		else
+		{
+			//ZOID--added so rail goes through SOLID_BBOX entities (gibs, etc)
+			if ((tr.ent->svflags & SVF_MONSTER) || (tr.ent->client) ||
+				(tr.ent->solid == SOLID_BBOX))
+				ignore = tr.ent;
+			else
+				ignore = NULL;
+
+			if ((tr.ent != self) && (tr.ent->takedamage))
+				T_Damage (tr.ent, self, self, aimdir, tr.endpos, tr.plane.normal, damage, kick, 0, MOD_RAILGUN);
+		}
+
+		VectorCopy (tr.endpos, from);
+	}
+
+	// send gun puff / flash
+	gi.WriteByte (svc_temp_entity);
+	gi.WriteByte (TE_RAILTRAIL);
+	gi.WritePosition (start);
+	gi.WritePosition (tr.endpos);
+	gi.multicast (self->s.origin, MULTICAST_PHS);
+//	gi.multicast (start, MULTICAST_PHS);
+	if (water)
+	{
+		gi.WriteByte (svc_temp_entity);
+		gi.WriteByte (TE_RAILTRAIL);
+		gi.WritePosition (start);
+		gi.WritePosition (tr.endpos);
+		gi.multicast (tr.endpos, MULTICAST_PHS);
+	}
+
+	if (self->client)
+
+		//back dash
+		for (j = 0;j< 3; j++)
+		{
+			self->velocity[j] -= (aimdir[j] * 500);
+		}
+
+		PlayerNoise(self, tr.endpos, PNOISE_IMPACT);
 }

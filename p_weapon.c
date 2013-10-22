@@ -771,7 +771,7 @@ ROCKET
 
 ======================================================================
 */
-//rocket: bruiser shoot 2 wide spread rockets that do more damage
+//rocket: bruiser shoots 2 wide spread rockets that do more damage
 
 void Weapon_RocketLauncher_Fire (edict_t *ent)
 {
@@ -812,6 +812,10 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 		fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
 
 		VectorSet(offset, 8, -8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
+
+		VectorSet(offset, 32, -8, ent->viewheight-8);
 		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 		fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
 	}
@@ -909,10 +913,6 @@ void Weapon_Blaster (edict_t *ent)
 	if (ent->flags & FL_BRUISER)
 		Weapon_Generic (ent, 4, 8, 52, 55, pause_frames, fire_frames, Weapon_Blaster_Fire);
 	else
-	/*
-	static int	pause_frames[]	= {23, 45, 0};
-	static int	fire_frames[]	= {4, 5, 0};
-	*/
 		Weapon_Generic (ent, 3, 5, 45, 49, pause_frames, fire_frames, Weapon_Blaster_Fire);
 	
 }
@@ -1018,7 +1018,7 @@ void Machinegun_Fire (edict_t *ent)
 	if (ent->flags & FL_BRUISER)
 		damage = 10;
 	else
-		damage = 2;
+		damage = 4;
 
 	if (!(ent->client->buttons & BUTTON_ATTACK))
 	{
@@ -1592,14 +1592,6 @@ void weapon_trait1_fire (edict_t *ent)
 }
 
 
-void Weapon_Trait (edict_t *ent)
-{
-	static int	pause_frames[]	= {56, 0};
-	static int	fire_frames[]	= {4, 0};
-
-	Weapon_Generic (ent, 3, 18, 56, 61, pause_frames, fire_frames, weapon_trait1_fire);
-}
-
 /*
 ======================================================================
 
@@ -1607,6 +1599,7 @@ TRAIT 1: Nuke
 
 ======================================================================
 */
+//Massive damage_radius to catch the speed demon
 
 void weapon_trait1_bruiser (edict_t *ent)
 {
@@ -1622,7 +1615,7 @@ void weapon_trait1_bruiser (edict_t *ent)
 	damage_radius = 1200;
 	
 	damage *= 4;
-	radius_damage *= 4;
+	radius_damage *= 40;
 
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 
@@ -1643,15 +1636,76 @@ void weapon_trait1_bruiser (edict_t *ent)
 
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
-	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
-		ent->client->pers.inventory[ent->client->ammo_index]--;
 }
 
-void Weapon_Trait1_Nuke (edict_t *ent)
+/*
+======================================================================
+
+Trait 2: Explosion
+
+======================================================================
+*/
+//For some reason, the landmine won't landmine hard enough, so I just made the trait a close range explosion attack :|
+
+void weapon_trait2_bruiser (edict_t *ent)
 {
-	static int	pause_frames[]	= {25, 33, 42, 50, 0};
-	static int	fire_frames[]	= {5, 0};
+		vec3_t	offset;
+	vec3_t	forward, right;
+	vec3_t	start;
+	int		damage;
+	float	radius;
 
-	Weapon_Generic (ent, 4, 12, 50, 54, pause_frames, fire_frames, weapon_trait1_bruiser);
+	damage = 200;
+	
+	radius = damage+300;
+	if (is_quad)
+		damage *= 4;
 
+	VectorSet(offset, 8, 8, ent->viewheight-8);
+	AngleVectors (ent->client->v_angle, forward, right, NULL);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+	VectorScale (forward, -2, ent->client->kick_origin);
+	ent->client->kick_angles[0] = -1;
+
+	fire_landmine (ent, start, forward, damage, 600, 2.5, radius);
+
+	gi.WriteByte (svc_muzzleflash);
+	gi.WriteShort (ent-g_edicts);
+	gi.WriteByte (MZ_GRENADE | is_silenced);
+	gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+	ent->client->ps.gunframe++;
+
+	PlayerNoise(ent, start, PNOISE_WEAPON);
+
+}
+
+void weapon_trait2_fire (edict_t *ent)
+{
+	vec3_t		start;
+	vec3_t		forward, right;
+	vec3_t		offset;
+	int			damage;
+	int			kick = 0;
+
+		damage = 0;
+
+	AngleVectors (ent->client->v_angle, forward, right, NULL);
+
+	//VectorScale (forward, -3, ent->client->kick_origin);
+	//ent->client->kick_angles[0] = -3;
+
+	//VectorSet(offset, 0, 7,  ent->viewheight-8);
+	//P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	fire_backdash (ent, start, forward, damage, kick);
+
+	// send muzzle flash
+	gi.WriteByte (svc_muzzleflash);
+	gi.WriteShort (ent-g_edicts);
+	gi.WriteByte (MZ_RAILGUN | is_silenced);
+	gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+	ent->client->ps.gunframe++;
+	//PlayerNoise(ent, start, PNOISE_WEAPON);
 }

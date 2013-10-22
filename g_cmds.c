@@ -938,6 +938,23 @@ void Cmd_Trait1_f (edict_t *ent)
 
 /*
 =================
+Cmd_Trait2_f
+=================
+*/
+void Cmd_Trait2_f (edict_t *ent)
+{
+	if (ent->flags & FL_BRUISER)
+	{
+		weapon_trait2_bruiser (ent);
+	}
+	else
+	{
+		weapon_trait2_fire (ent);
+	}
+}
+
+/*
+=================
 ClientCommand
 =================
 */
@@ -1027,6 +1044,8 @@ void ClientCommand (edict_t *ent)
 		Cmd_ChangeClass_f (ent);
 	else if (Q_stricmp (cmd, "trait1") == 0) //trait 1 command
 		Cmd_Trait1_f (ent);
+	else if (Q_stricmp (cmd, "trait2") == 0) //trait 2 command
+		Cmd_Trait2_f (ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
 }
