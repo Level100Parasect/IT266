@@ -954,10 +954,8 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 			else
 				effect = 0;
 			if (deathmatch->value)
-				//damage = 15;
 				damage = 8;
 			else
-				//damage = 20;
 				damage = 4;
 			Blaster_Fire (ent, offset, damage, true, effect);
 			if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
@@ -1004,7 +1002,8 @@ MACHINEGUN / CHAINGUN
 
 ======================================================================
 */
-//machinegun: speed demon shoots bullets in a wider angle, but they are weaker
+//machinegun: speed demon shoots bullets in a wider angle, but they are weaker. machine gun is the speed demon weapon.
+//chaingun: bruiser's gun. it's stronger.
 void Machinegun_Fire (edict_t *ent)
 {
 	int	i;
@@ -1089,6 +1088,14 @@ void Machinegun_Fire (edict_t *ent)
 		VectorSet(offset, 0, 32, ent->viewheight-8);
 		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+
+		VectorSet(offset, 16, 8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+
+		VectorSet(offset, -16, 8, ent->viewheight-8);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
 	}
 
 	gi.WriteByte (svc_muzzleflash);
@@ -1133,11 +1140,9 @@ void Chaingun_Fire (edict_t *ent)
 	int			damage;
 	int			kick = 2;
 
-	if (deathmatch->value)
-		//damage = 6;
-		damage = 2;
+	if (ent->flags & FL_BRUISER)
+		damage = 12;
 	else
-		//damage = 8;
 		damage = 4;
 
 	if (ent->client->ps.gunframe == 5)
@@ -1334,7 +1339,7 @@ void weapon_supershotgun_fire (edict_t *ent)
 	int			kick = 12;
 
 	if (ent->flags & FL_BRUISER)
-		damage = 10;
+		damage = 12;
 	else
 		damage = 2;
 
@@ -1376,12 +1381,6 @@ void weapon_supershotgun_fire (edict_t *ent)
 
 void Weapon_SuperShotgun (edict_t *ent)
 {
-	/*
-	static int	pause_frames[]	= {29, 42, 57, 0};
-	static int	fire_frames[]	= {7, 0};
-
-	Weapon_Generic (ent, 6, 17, 57, 61, pause_frames, fire_frames, weapon_supershotgun_fire);
-	*/
 	static int	pause_frames[]	= {23, 45, 0};
 	static int	fire_frames[]	= {4, 5, 0};
 	
@@ -1625,7 +1624,21 @@ void weapon_trait1_bruiser (edict_t *ent)
 	
 	VectorSet(offset, 8, 8, ent->viewheight-8);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-	fire_nuke (ent, start, forward, damage, 650, damage_radius, radius_damage);
+	fire_nuke (ent, start, forward, damage, 200, damage_radius, radius_damage);
+
+	VectorSet(offset, 8, -8, ent->viewheight-8);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	fire_nuke (ent, start, forward, damage, 200, damage_radius, radius_damage);
+
+	VectorSet(offset, 8, -32, ent->viewheight-8);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	fire_nuke (ent, start, forward, damage, 200, damage_radius, radius_damage);
+
+	VectorSet(offset, 8, 32, ent->viewheight-8);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	fire_nuke (ent, start, forward, damage, 200, damage_radius, radius_damage);
+	
+	//work around for the wider damage radius
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
