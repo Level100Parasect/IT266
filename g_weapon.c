@@ -677,7 +677,7 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 			//rocket jump for the speed demon
 			for (j = 0;j< 3; j++)
 			{
-				self->velocity[j] -= (dir[j] * 1000);
+				self->velocity[j] -= (dir[j] * 750);
 			}
 
 	}
@@ -1014,7 +1014,7 @@ void fire_trait1 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int ki
 		//grappling hook for the speed demon? i dunno if it works. fml
 		for (j = 0;j< 3; j++)
 		{
-			self->velocity[j] += (aimdir[j] * 1000);
+			self->velocity[j] += (aimdir[j] * 750);
 		}
 
 		PlayerNoise(self, tr.endpos, PNOISE_IMPACT);
@@ -1151,7 +1151,7 @@ void fire_backdash (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 		//back dash
 		for (j = 0;j< 3; j++)
 		{
-			self->velocity[j] -= (aimdir[j] * 500);
+			self->velocity[j] -= (aimdir[j] * 400);
 		}
 
 		PlayerNoise(self, tr.endpos, PNOISE_IMPACT);

@@ -903,7 +903,7 @@ void Cmd_PlayerList_f(edict_t *ent)
 ==================
 Cmd_ChangeClass_f
 
-Switches ints for the thing with the mechanic and stuff
+Switches flags similar to the GODMODE command. they were similar, so I modelled this command after that command.
 ==================
 */
 void Cmd_ChangeClass_f (edict_t *ent)
@@ -911,6 +911,7 @@ void Cmd_ChangeClass_f (edict_t *ent)
 	char	*msg;
 
 	//This is a good way to change classes in real time, but can cause an animation error - djm28
+	//
 	ent->flags ^= FL_BRUISER;
 	if (!(ent->flags & FL_BRUISER) )
 		msg = "Gotta go Fast!\n";
@@ -926,6 +927,8 @@ Maybe could have added more traits per class or more classes?
 
 -djm28
 */
+
+//next project. Maybe a trap-based class and a summoning class. Maybe even both at the same time.
 
 /*
 =================
@@ -1048,11 +1051,11 @@ void ClientCommand (edict_t *ent)
 		Cmd_Wave_f (ent);
 	else if (Q_stricmp(cmd, "playerlist") == 0)
 		Cmd_PlayerList_f(ent);
-	else if (Q_stricmp (cmd, "changeclass") == 0) //class changing command
+	else if (Q_stricmp (cmd, "changeclass") == 0) //class changing command with 'E' Key
 		Cmd_ChangeClass_f (ent);
-	else if (Q_stricmp (cmd, "trait1") == 0) //trait 1 command
+	else if (Q_stricmp (cmd, "trait1") == 0) //trait 1 command with right click
 		Cmd_Trait1_f (ent);
-	else if (Q_stricmp (cmd, "trait2") == 0) //trait 2 command
+	else if (Q_stricmp (cmd, "trait2") == 0) //trait 2 command with 'F' Key
 		Cmd_Trait2_f (ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
